@@ -1,0 +1,38 @@
+movies: source https://networkdata.ics.uci.edu/netdata/html/movies.html
+102 vertices
+
+hiv: source http://konect.cc/networks/hiv/
+40 vertices
+
+maayan: source http://konect.cc/networks/maayan-pdzbase/
+212 vertices
+
+gene_fusion: source http://konect.cc/networks/gene_fusion/
+291 vertices
+
+football: source http://konect.cc/networks/dimacs10-football/
+115 vertices
+
+similarities: source http://konect.cc/networks/dbpedia-similar/
+430 vertices
+
+euroroad: source http://konect.cc/networks/subelj_euroroad/
+1174 vertices
+
+yeast: source http://konect.cc/networks/moreno_propro/
+1180 vertices
+
+netsci: source http://konect.cc/networks/dimacs10-netscience/
+1461 vertices
+
+facebook: source http://konect.cc/networks/ego-facebook/
+2888 vertices
+
+icefiresocial: source http://konect.cc/networks/asoiaf/
+796 vertices
+
+hamster: source http://konect.cc/networks/petster-hamster-household/
+1576 vertices
+
+sistercities: source http://konect.cc/networks/twin/
+14274 vertices
