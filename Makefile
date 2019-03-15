@@ -5,18 +5,32 @@ EXEC_NAME=clawfinder
 CC=g++
 
 # Default Options to use
-CFLAGS= -Wall -O3
+CFLAGS= -Wno-write-strings -O3
 CLIBS=
+
+#NAUTYSRC= nauty.c nautil.c naugraph.c
 
 # Source files
 SRC =               \
-	claw_finder.cpp \
+	CmdLine.cpp     \
 	GraphMatrix.cpp	\
 	GraphUtils.cpp	\
+	Esu.cpp		\
 	CompressedGraph.cpp \
 	GraphCompressor.cpp \
 	GraphStats.cpp      \
-	Error.cpp	
+	Conditions.cpp	\
+	Isomorphism.cpp	\
+	Error.cpp	\
+	GTrie.cpp	\
+	Timer.cpp	\
+	Random.cpp	\
+	GraphTree.cpp	\
+	nauty/nauty.c	\
+	nauty/nautil.c	\
+	nauty/naugraph.c	\
+	claw_finder.cpp 	\
+	
 
 OBJ =  ${SRC:.cpp=.o}
 
