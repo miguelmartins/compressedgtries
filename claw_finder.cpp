@@ -64,6 +64,7 @@ int main(int argc, char* argv[])
 	Esu::compressedCountSubgraphs(C, motif_size, &sg2);
 	
 
+	
 	graph2.sortNeighbours();
 	graph2.makeArrayNeighbours();
 	std::cout << "Original" << endl;
@@ -75,7 +76,7 @@ int main(int argc, char* argv[])
 	GraphStats *stats = new GraphStats(C);
 	CompressedGraph *X = compressor.decompressGraph(C);
 
-	std::cout << graph2.numNodes()- X->numNodes() << endl;
+	std::cout << "DIFF: " << graph2.numNodes()- X->numNodes() << endl;
 
 	stats->compressionRate();
 	int max = C->numNodes();

@@ -41,6 +41,8 @@ CompressedGraph* GraphCompressor::compressGraph(Graph *g)
 	int _num_nodes = g->numNodes();
 
 	int *_num_neighbours = g->arrayNumNeighbours();
+
+
 	int *visited = new int[_num_nodes];
 	int *claws = new int[_num_nodes];
 
@@ -62,8 +64,6 @@ CompressedGraph* GraphCompressor::compressGraph(Graph *g)
 			/* Updates border node claw counter. */
 			claws[(*g->neighbours(i))[0]]++;
 			/* It only works for undirected graphs. */
-			g->rmEdge(i, (*g->neighbours(i))[0]);
-			g->rmEdge((*g->neighbours(i))[0], i);
 		}
 		else
 		{
@@ -71,6 +71,15 @@ CompressedGraph* GraphCompressor::compressGraph(Graph *g)
 			visited[i] = node_counter;
 			/* Only accounts for nodes that are not peripheral. */ 
 			node_counter++;
+		}
+	}
+
+	for(i = 0; i < _num_nodes; i++)
+	{
+		if(claws[i] == -1)
+		{
+			g->rmEdge(i, (*g->neighbours(i))[0]);
+			g->rmEdge((*g->neighbours(i))[0], i);
 		}
 	}
 

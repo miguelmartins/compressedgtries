@@ -36,16 +36,13 @@ int     Esu::count = 0;
 candidate *Esu::ext = NULL;
 candidate *Esu::current = NULL;
 
-
+int     Esu::claw_memory = 0;
 /*! Recursively extend a partial subgraph
     \param n the current position in the constructed subgraph 
     \param size the subgraph size
     \param next number of elements in the list "ext"
     \param ext of the nodes that can be used to extend the subgraph */
 void Esu::_go(int n, int size, int next, int *ext) {
-
-  for(int p = 0; p < size; p++) std::cout << "\t";
-
   _current[size++] = n;
 
   /*
@@ -138,7 +135,7 @@ void Esu::compressedGo(candidate n, int size, int actual_size, int next, candida
   } else {
     int i,j;
     int next2 = next;
-    candidate ext2[100 * _graph_size];
+    candidate ext2[_graph_size + claw_memory];
 
 
     if(current[size - 1].claw == 0)
@@ -217,10 +214,21 @@ void Esu::compressedCountSubgraphs(CompressedGraph *g, int k, GraphTree *sg) {
   _motif_size = k;
   _graph_size = g->numNodes();
   current = new candidate[k];
-  ext = new candidate[100 * _graph_size];
+  
   _next = 0;
   c = g;
   _sg = sg;
+
+  /*In the worst case we have to generate every combination for every claw.*/
+  for(i = 0; i <_graph_size; i++)
+  {
+    if(c->numClaws(i) > 0)
+    {
+      claw_memory += c->numClaws(i);
+    }
+  }
+
+  ext = new candidate[_graph_size + claw_memory];
 
   sg->zeroFrequency();
 

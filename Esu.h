@@ -39,6 +39,7 @@ class Esu {
   static int _next;
   static int _graph_size;
   static int _motif_size;
+  static int claw_memory;
   static Graph * _g;
   static GraphTree *_sg;
   static double *_prob;
