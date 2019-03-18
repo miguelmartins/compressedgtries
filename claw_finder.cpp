@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
 
 	dimensions = graph.numNodes();
 
-	int motif_size = 3;
+	int motif_size = 5;
 
 	GraphTree sg;
 	GraphTree sg2;

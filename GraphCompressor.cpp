@@ -124,7 +124,6 @@ CompressedGraph* GraphCompressor::decompressGraph(CompressedGraph *c)
     	}
     	
     }
-
-    std::cout << "Successfully decompressed " << original_size - size << " nodes!" << endl;
+    
     return g;
 }
