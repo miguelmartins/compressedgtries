@@ -22,6 +22,7 @@ Last Update: 11/02/2012
 
 #include "Common.h"
 #include "Graph.h"
+#include "CompressedGraph.h"
 
 #define MAXN MAX_MOTIF_SIZE
 #define WORKSPACE_SIZE MAXN*160
@@ -47,7 +48,7 @@ class Isomorphism {
   static void finishNauty();
 
   static void canonicalStrNauty(Graph *g, int *v, char *s);
-
+  static void compressedCanonicalStrNauty(CompressedGraph *myg, int *v, char*s);
   static void canonicalNauty(const char *in, char *out, int size);
   static void canonicalBigger(const char *in, char *out, int size);
   static void canonicalBigger2(const char *in, char *out, int size);

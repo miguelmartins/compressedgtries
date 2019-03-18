@@ -22,6 +22,7 @@ Last Update: 11/02/2012
 #include "GraphMatrix.h"
 #include "Conditions.h"
 
+
 // Static variables
 setword Isomorphism::workspace[WORKSPACE_SIZE];
 int Isomorphism::n,Isomorphism::m;
@@ -71,6 +72,30 @@ void Isomorphism::canonicalStrNauty(Graph *myg, int *v, char *s) {
 
   nauty(g,lab,ptn,NULL,orbits,&options,&stats,
 	workspace,WORKSPACE_SIZE,m,n,mm);
+
+  aux=0;
+  for (i=0; i<n; i++) {
+    gv = GRAPHROW(mm,i,m); 
+    for (j=0; j<n; j++)
+         s[aux++] = ISELEMENT(gv,j)?'1':'0';
+  }
+  s[aux]=0;
+}
+
+void Isomorphism::compressedCanonicalStrNauty(CompressedGraph *myg, int *v, char*s)
+{
+  int i, j, aux;
+  static bool **adjM = myg->adjacencyMatrix();
+
+  for (i=0; i<n; i++) {
+    gv = GRAPHROW(g,i,m);
+    EMPTYSET(gv,m);
+    for (j=0; j<n; j++)
+      if (adjM[v[i]][v[j]]) ADDELEMENT(gv,j);
+  }
+
+  nauty(g,lab,ptn,NULL,orbits,&options,&stats,
+  workspace,WORKSPACE_SIZE,m,n,mm);
 
   aux=0;
   for (i=0; i<n; i++) {

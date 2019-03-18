@@ -23,7 +23,7 @@ Last Update: 11/02/2012
 #include "Common.h"
 #include "GraphTree.h"
 #include "CompressedGraph.h"
-
+#include "GraphCompressor.h"
 
 typedef struct candidate{
   int claw;
@@ -45,9 +45,12 @@ class Esu {
   static double *_prob;
 
   static CompressedGraph *c;
+  static CompressedGraph *x;
   static int count;
   static candidate *ext;
   static candidate *current;
+  static int *claw_seq;
+  static int *claw_start_index;
 
   static void _go(int n, int size, int next, int *ext);
   static void _goSample(int n, int size, int next, int *ext);

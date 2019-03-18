@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
 
 	dimensions = graph.numNodes();
 
-	int motif_size = 3;
+	int motif_size = 6;
 
 	GraphTree sg;
 	GraphTree sg2;
@@ -62,7 +62,8 @@ int main(int argc, char* argv[])
 
 	std::cout << endl << "*****COMPRESSED*****" << endl;
 	Esu::compressedCountSubgraphs(C, motif_size, &sg2);
-	
+	printf("%d subgraphs, ",   sg2.countGraphs());
+  	printf("%.0f occurrences\n", sg2.countOccurrences());
 
 	
 	graph2.sortNeighbours();

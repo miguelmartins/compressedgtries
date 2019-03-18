@@ -32,11 +32,17 @@ double *Esu::_prob;
 GraphTree *Esu::_sg;
 
 CompressedGraph *Esu::c = NULL;
+CompressedGraph *Esu::x = NULL;
+
 int     Esu::count = 0;
 candidate *Esu::ext = NULL;
 candidate *Esu::current = NULL;
 
 int     Esu::claw_memory = 0;
+
+int *Esu::claw_seq = NULL;
+int *Esu::claw_start_index = NULL;
+
 /*! Recursively extend a partial subgraph
     \param n the current position in the constructed subgraph 
     \param size the subgraph size
@@ -120,14 +126,32 @@ void Esu::compressedGo(candidate n, int size, int actual_size, int next, candida
     /*Constrói occcurencia*/
 
     int prod = 1;
+    int cont = 0;
+    int v[_motif_size];
+    char s[_motif_size*_motif_size+1];
+
     for (int cnt = 0; cnt < size; cnt++)
     {
       if(current[cnt].claw == 0)
+      {
         prod *= 1;
+        v[cont] = current[cnt].label;
+        cont++;
+      }
       else
+      {
         prod *= nChoosek(current[cnt].claw, current[cnt].k);
+
+        for(int j = 0; j < current[cnt].k; j++)
+        {
+          v[cont] = claw_start_index[current[cnt].label] + j;
+          cont++;
+        }
+      }
     }
 
+    Isomorphism::compressedCanonicalStrNauty(x, v, s);
+    _sg->addString(s, prod);
     count += prod;
 
   } else {
@@ -209,8 +233,7 @@ void Esu::compressedGo(candidate n, int size, int actual_size, int next, candida
 void Esu::compressedCountSubgraphs(CompressedGraph *g, int k, GraphTree *sg) {
   int i;
   int next = 0;
-  
-
+  GraphCompressor compressor;
   _motif_size = k;
   _graph_size = g->numNodes();
   current = new candidate[k];
@@ -230,21 +253,48 @@ void Esu::compressedCountSubgraphs(CompressedGraph *g, int k, GraphTree *sg) {
 
   ext = new candidate[_graph_size + claw_memory];
 
+  x = compressor.decompressGraph(c);
+
+  claw_seq = new int[c->numNodes()];
+  claw_start_index = new int[c->numNodes()];
+
+  int accum = 0;
+  int total = c->numNodes();
+  
+  for(i = 0; i < total; i++)
+  {
+    claw_seq[i] = c->numClaws(i);
+    if(claw_seq[i] > 0)
+    {
+      claw_start_index[i] = total + accum;
+      accum += claw_seq[i];
+    }
+    else
+    {
+      claw_start_index[i] = 0;
+    }
+  }
+
+  Isomorphism::initNauty(k, false);
+
   sg->zeroFrequency();
 
-   for (i = 0; i < _graph_size; i++)
-   {
-      candidate q;
-      q.label = i;
-      q.claw = 0;
-      q.k = 0;
-      candidate v[1]; 
-      compressedGo(q, 0, 0, 0, v);
-   }
+ for (i = 0; i < _graph_size; i++)
+ {
+    candidate q;
+    q.label = i;
+    q.claw = 0;
+    q.k = 0;
+    candidate v[1]; 
+    compressedGo(q, 0, 0, 0, v);
+ }
+
   std::cout << endl << "Compressed Ocurrences " << count << endl;
   count = 0;
   delete[] current;
   delete[] ext;
+  delete[] claw_seq;
+  delete[] claw_start_index;
 }
 
 
