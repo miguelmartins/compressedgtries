@@ -133,7 +133,7 @@ void Esu::compressedGo(candidate n, int size, int actual_size, int next, candida
   } else {
     int i,j;
     int next2 = next;
-    candidate ext2[_graph_size*100];
+    candidate ext2[_graph_size + claw_memory];
 
     for (i=0;i<next;i++)
     {
@@ -142,30 +142,10 @@ void Esu::compressedGo(candidate n, int size, int actual_size, int next, candida
      ext2[i].label = ext[i].label;
     }
 
-
     if(current[size - 1].claw == 0)
     {
       int *v  = c->arrayNeighbours(current[size-1].label);
       int num = c->numNeighbours(current[size-1].label);
-
-      if(c->numClaws(current[size - 1].label) > 0)
-      {
-         int remain_size;
-
-         remain_size = _motif_size - actual_size;
-         /*Podemos gerar as combinacoes ate no maximo o tamanho da claw*/
-         int bound = min(remain_size, c->numClaws(current[size - 1].label));
-
-
-         for(int comb = 1; comb <= bound; comb++)
-         {
-           ext2[next2].label = current[size - 1].label;
-           ext2[next2].claw = c->numClaws(current[size - 1].label);
-           ext2[next2].k = comb;
-
-           next2++;
-         }
-      }
 
       for (i=0; i<num; i++) 
       {
@@ -190,6 +170,24 @@ void Esu::compressedGo(candidate n, int size, int actual_size, int next, candida
         }   
       }
 
+      if(c->numClaws(current[size - 1].label) > 0)
+      {
+         int remain_size;
+
+         remain_size = _motif_size - actual_size;
+         /*Podemos gerar as combinacoes ate no maximo o tamanho da claw*/
+         int bound = min(remain_size, c->numClaws(current[size - 1].label));
+
+
+         for(int comb = 1; comb <= bound; comb++)
+         {
+           ext2[next2].label = current[size - 1].label;
+           ext2[next2].claw = c->numClaws(current[size - 1].label);
+           ext2[next2].k = comb;
+           compressedGo(ext2[next2], size, actual_size, next2, ext2);
+         }
+      }
+
       /*Faz a recursão para todos os candidatos válidos*/
       while (next2 > 0) {     
         next2--;
@@ -202,12 +200,7 @@ void Esu::compressedGo(candidate n, int size, int actual_size, int next, candida
     {
        while (next2 > 0) {      
         next2--;
-        if(ext2[next2].claw > 0 && ext2[next2].label == current[size - 1].label) 
-          continue;
-        else
-        {
-          compressedGo(ext2[next2], size, actual_size, next2, ext2);
-        }
+        compressedGo(ext2[next2], size, actual_size, next2, ext2);
       }
     }
   }
@@ -235,7 +228,7 @@ void Esu::compressedCountSubgraphs(CompressedGraph *g, int k, GraphTree *sg) {
     }
   }
 
-  ext = new candidate[_graph_size*100];
+  ext = new candidate[_graph_size + claw_memory];
 
   sg->zeroFrequency();
 
