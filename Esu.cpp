@@ -104,7 +104,7 @@ void Esu::_go(int n, int size, int next, int *ext) {
     \param size the subgraph size
     \param next number of elements in the list "ext"
     \param ext of the nodes that can be used to extend the subgraph */
-void Esu::compressedGo(candidate n, int size, int actual_size, int next, candidate *ext) {
+void Esu::compressedGo(candidate n, int size, int actual_size, int next, candidate *ext, int total_occurences) {
 
   current[size].label = n.label;
   current[size].claw = n.claw;
@@ -112,11 +112,20 @@ void Esu::compressedGo(candidate n, int size, int actual_size, int next, candida
 
   if(current[size].claw == 0)
   {
+    _current[actual_size] = n.label;
+    total_occurences *= 1;
     actual_size += 1;
   }
   else
   {
+    int start = actual_size;
     actual_size += current[size].k;
+    for(int j = 0; j < current[size].k ; j++)
+    {
+       _current[start + j] = claw_start_index[current[size].label] + j;
+    }
+
+    total_occurences *= nChoosek(current[size].claw, current[size].k);
   }
 
   size++;
@@ -125,34 +134,11 @@ void Esu::compressedGo(candidate n, int size, int actual_size, int next, candida
   if (actual_size == _motif_size) {
     /*Constrói occcurencia*/
 
-    int prod = 1;
-    int cont = 0;
-    int v[_motif_size];
     char s[_motif_size*_motif_size+1];
 
-    for (int cnt = 0; cnt < size; cnt++)
-    {
-      if(current[cnt].claw == 0)
-      {
-        prod *= 1;
-        v[cont] = current[cnt].label;
-        cont++;
-      }
-      else
-      {
-        prod *= nChoosek(current[cnt].claw, current[cnt].k);
-
-        for(int j = 0; j < current[cnt].k; j++)
-        {
-          v[cont] = claw_start_index[current[cnt].label] + j;
-          cont++;
-        }
-      }
-    }
-
-    Isomorphism::compressedCanonicalStrNauty(x, v, s);
-    _sg->addString(s, prod);
-    count += prod;
+    Isomorphism::compressedCanonicalStrNauty(x, _current, s);
+    _sg->addString(s, total_occurences);
+    /*count += total_occurences;*/
 
   } else {
     int i,j;
@@ -208,14 +194,14 @@ void Esu::compressedGo(candidate n, int size, int actual_size, int next, candida
            ext2[next2].label = current[size - 1].label;
            ext2[next2].claw = c->numClaws(current[size - 1].label);
            ext2[next2].k = comb;
-           compressedGo(ext2[next2], size, actual_size, next2, ext2);
+           compressedGo(ext2[next2], size, actual_size, next2, ext2, total_occurences);
          }
       }
 
       /*Faz a recursão para todos os candidatos válidos*/
       while (next2 > 0) {     
         next2--;
-        compressedGo(ext2[next2], size, actual_size, next2, ext2);
+        compressedGo(ext2[next2], size, actual_size, next2, ext2, total_occurences);
       }
     }
 
@@ -224,7 +210,7 @@ void Esu::compressedGo(candidate n, int size, int actual_size, int next, candida
     {
        while (next2 > 0) {      
         next2--;
-        compressedGo(ext2[next2], size, actual_size, next2, ext2);
+        compressedGo(ext2[next2], size, actual_size, next2, ext2, total_occurences);
       }
     }
   }
@@ -237,6 +223,7 @@ void Esu::compressedCountSubgraphs(CompressedGraph *g, int k, GraphTree *sg) {
   _motif_size = k;
   _graph_size = g->numNodes();
   current = new candidate[k];
+  _current = new int[k];
   
   _next = 0;
   c = g;
@@ -286,10 +273,9 @@ void Esu::compressedCountSubgraphs(CompressedGraph *g, int k, GraphTree *sg) {
     q.claw = 0;
     q.k = 0;
     candidate v[1]; 
-    compressedGo(q, 0, 0, 0, v);
+    compressedGo(q, 0, 0, 0, v, 1);
  }
 
-  std::cout << endl << "Compressed Ocurrences " << count << endl;
   count = 0;
   delete[] current;
   delete[] ext;

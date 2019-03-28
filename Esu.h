@@ -56,7 +56,7 @@ class Esu {
   static void _goSample(int n, int size, int next, int *ext);
 
   static unsigned nChoosek(unsigned n, unsigned k);
-  static void compressedGo(candidate n, int size, int actual_size, int next, candidate *ext);
+  static void compressedGo(candidate n, int size, int actual_size, int next, candidate *ext, int total_occurences);
   static int min(int a, int b);
 
  public:

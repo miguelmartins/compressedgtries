@@ -6,6 +6,7 @@
 #include "GraphStats.h"
 #include "GraphTree.h"
 #include "Esu.h"
+#include "Timer.h"
 #include <iostream>
 #include <list>
 
@@ -28,6 +29,11 @@ int main(int argc, char* argv[])
 		std::cerr << " Please state if it is weighted(true) or not.";
 	}
 
+	if(argc < 4)
+	{
+		std::cerr << " Please state motif size (>=3).";
+	}
+
 
 	if(std::string(argv[2]).compare("true") == 0) 
 	{
@@ -37,8 +43,9 @@ int main(int argc, char* argv[])
 	else
 	{
 		settings = false;
+	}
 
-	} 
+	std::cout << endl; 
 		
 	GraphUtils::readFileTxt(&graph, argv[1], false, settings);
 	GraphUtils::readFileTxt(&graph2, argv[1], false, settings);
@@ -46,30 +53,34 @@ int main(int argc, char* argv[])
 
 	dimensions = graph.numNodes();
 
-	int motif_size = 6;
+	int motif_size = std::stoi(argv[3]);
 
 	GraphTree sg;
 	GraphTree sg2;
-	
   	
 	GraphCompressor compressor;
+	Timer::start(0);
 	CompressedGraph *C = compressor.compressGraph(&graph);
 
 	C->sortNeighbours();
 	C->makeArrayNeighbours();
 	
-	std::cout << endl;
+	Esu::compressedCountSubgraphs(C, motif_size, &sg2);
+	Timer::stop(0);
 
 	std::cout << endl << "*****COMPRESSED*****" << endl;
-	Esu::compressedCountSubgraphs(C, motif_size, &sg2);
+	printf("Time: %.2f\n", Timer::elapsed(0));
 	printf("%d subgraphs, ",   sg2.countGraphs());
   	printf("%.0f occurrences\n", sg2.countOccurrences());
 
-	
+	Timer::start(0);
 	graph2.sortNeighbours();
 	graph2.makeArrayNeighbours();
-	std::cout << "Original" << endl;
+	
 	Esu::countSubgraphs(&graph2, motif_size, &sg);
+	Timer::stop(0);
+	std::cout << "Original" << endl;
+	printf("Time: %.2f\n", Timer::elapsed(0));
 	printf("%d subgraphs, ",   sg.countGraphs());
   	printf("%.0f occurrences\n", sg.countOccurrences());
 	
@@ -77,7 +88,6 @@ int main(int argc, char* argv[])
 	GraphStats *stats = new GraphStats(C);
 	CompressedGraph *X = compressor.decompressGraph(C);
 
-	std::cout << "DIFF: " << graph2.numNodes()- X->numNodes() << endl;
 
 	stats->compressionRate();
 	int max = C->numNodes();
