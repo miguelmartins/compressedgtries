@@ -65,6 +65,9 @@ int main(int argc, char* argv[])
 	C->sortNeighbours();
 	C->makeArrayNeighbours();
 	
+
+	Esu::compressedFaSE(C, motif_size);
+
 	Esu::compressedCountSubgraphs(C, motif_size, &sg2);
 	Timer::stop(0);
 

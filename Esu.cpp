@@ -42,6 +42,14 @@ int     Esu::claw_memory = 0;
 
 int *Esu::claw_seq = NULL;
 int *Esu::claw_start_index = NULL;
+char Esu::globStr[MAXS];
+int  Esu::typeLabel = LSLabeling::TYPE_PICK;
+
+
+char* Esu::LSLabel(int w, int subSize)
+{
+  return LSLabeling::Label(_current, subSize, w, typeLabel, globStr, false);
+}
 
 /*! Recursively extend a partial subgraph
     \param n the current position in the constructed subgraph 
@@ -275,6 +283,237 @@ void Esu::compressedCountSubgraphs(CompressedGraph *g, int k, GraphTree *sg) {
     candidate v[1]; 
     compressedGo(q, 0, 0, 0, v, 1);
  }
+
+  count = 0;
+  delete[] current;
+  delete[] ext;
+  delete[] claw_seq;
+  delete[] claw_start_index;
+}
+
+
+/*! Recursively extend a partial compressed subgraph
+    \param n the current position in the constructed subgraph 
+    \param size the subgraph size
+    \param next number of elements in the list "ext"
+    \param ext of the nodes that can be used to extend the subgraph */
+void Esu::compressedFaSEGo(candidate n, int size, int actual_size, int next, candidate *ext, int total_occurences) {
+
+  current[size].label = n.label;
+  current[size].claw = n.claw;
+  current[size].k = n.k;
+
+  if(current[size].claw == 0)
+  {
+    _current[actual_size] = n.label;
+    total_occurences *= 1;
+    if(actual_size > 0)
+    {
+      char* addLabel = LSLabel(_current[actual_size], actual_size); 
+      CustomGTrie::compressedInsert(addLabel, total_occurences);
+      //printf("Inserted\n");
+    }
+    else
+    {
+      //printf("yikes!\n");
+    }
+
+    actual_size += 1;
+  }
+  else
+  {
+    int start = actual_size;
+    actual_size += current[size].k;
+    total_occurences *= nChoosek(current[size].claw, current[size].k);
+    for(int j = 0; j < current[size].k - 1 ; j++)
+    {
+       _current[start + j] = claw_start_index[current[size].label] + j;
+       //printf("Deepen %d\n", _current[start + j]);
+       char* addLabel = LSLabel(_current[start + j], start + j); 
+       CustomGTrie::deepenClaw(addLabel, total_occurences); 
+       /*Se calhar por aqui?*/
+    }
+
+    _current[start + current[size].k - 1] = claw_start_index[current[size].label] + current[size].k - 1;
+
+
+    //printf("Inserted claw %d\n", _current[start + current[size].k - 1]);
+    char* addLabel = LSLabel(_current[actual_size - 1], actual_size - 1);
+    CustomGTrie::compressedInsert(addLabel, total_occurences);
+  }
+
+  //std::cout << "Current Solution: ";
+  /*
+  for(int l = 0; l < actual_size; l++)
+  {
+    std::cout << _current[l] << " ";
+  }
+
+  std::cout << endl;*/
+  size++;
+
+
+  if (actual_size == _motif_size) {
+    /*Constrói occcurencia*/
+    if(!CustomGTrie::getCurrentLeaf())
+    {
+        char s[_motif_size*_motif_size+1];
+        Isomorphism::compressedCanonicalStrNauty(x, _current, s);
+        CustomGTrie::setCanonicalLabel(s);
+    }
+    /*count += total_occurences;*/
+
+  } else {
+    int i,j;
+    int next2 = next;
+    candidate ext2[_graph_size + claw_memory];
+
+    for (i=0;i<next;i++)
+    {
+     ext2[i].claw = ext[i].claw;
+     ext2[i].k = ext[i].k;
+     ext2[i].label = ext[i].label;
+    }
+
+    if(current[size - 1].claw == 0)
+    {
+      int *v  = c->arrayNeighbours(current[size-1].label);
+      int num = c->numNeighbours(current[size-1].label);
+
+      for (i=0; i<num; i++) 
+      {
+        /*Ver se w >= v*/
+        if (v[i] <= current[0].label) 
+        {
+          continue;
+        }
+        /*Neighbourhood exclusiva*/
+
+        for (j=0; j+1<size; j++)
+          if (c->isConnected(v[i],current[j].label)) 
+            break;
+
+        /*Se nao falhou no for adiciona-o à vizinhança*/
+        if (j+1 == size)
+        {
+          ext2[next2].label = v[i];
+          ext2[next2].claw = 0;
+          ext2[next2].k = 0;
+          next2++; 
+        }   
+      }
+
+      if(c->numClaws(current[size - 1].label) > 0)
+      {
+         int remain_size;
+
+         remain_size = _motif_size - actual_size;
+         /*Podemos gerar as combinacoes ate no maximo o tamanho da claw*/
+         int bound = min(remain_size, c->numClaws(current[size - 1].label));
+
+
+         for(int comb = 1; comb <= bound; comb++)
+         {
+           ext2[next2].label = current[size - 1].label;
+           ext2[next2].claw = c->numClaws(current[size - 1].label);
+           ext2[next2].k = comb;
+           compressedFaSEGo(ext2[next2], size, actual_size, next2, ext2, total_occurences);
+           for(int jmp = 0; jmp < comb; jmp++)
+            CustomGTrie::jump();
+           
+         }
+         
+      }
+
+      /*Faz a recursão para todos os candidatos válidos*/
+      while (next2 > 0) {     
+        next2--;
+        compressedFaSEGo(ext2[next2], size, actual_size, next2, ext2, total_occurences);
+        CustomGTrie::jump();
+      }
+    }
+
+    /*É um nó do tipo claw, logo não tem vizinhos novos*/
+    else
+    {
+       while (next2 > 0) {      
+        next2--;
+        compressedFaSEGo(ext2[next2], size, actual_size, next2, ext2, total_occurences);
+        if(ext2[next2].k == 0) 
+        {
+          CustomGTrie::jump();
+        } 
+      }
+    }
+  }
+}
+
+
+void Esu::compressedFaSE(CompressedGraph *g, int k) {
+  int i;
+  int next = 0;
+  GraphCompressor compressor;
+  _motif_size = k;
+  _graph_size = g->numNodes();
+  current = new candidate[k];
+  _current = new int[k];
+  
+  _next = 0;
+  c = g;
+
+  /*In the worst case we have to generate every combination for every claw.*/
+  for(i = 0; i <_graph_size; i++)
+  {
+    if(c->numClaws(i) > 0)
+    {
+      claw_memory += c->numClaws(i);
+    }
+  }
+
+  ext = new candidate[_graph_size + claw_memory];
+
+  x = compressor.decompressGraph(c);
+
+  claw_seq = new int[c->numNodes()];
+  claw_start_index = new int[c->numNodes()];
+
+
+  CustomGTrie::init();
+  LSLabeling::init(x);
+  int accum = 0;
+  int total = c->numNodes();
+  
+  for(i = 0; i < total; i++)
+  {
+    claw_seq[i] = c->numClaws(i);
+    if(claw_seq[i] > 0)
+    {
+      claw_start_index[i] = total + accum;
+      accum += claw_seq[i];
+    }
+    else
+    {
+      claw_start_index[i] = 0;
+    }
+  }
+
+  Isomorphism::initNauty(k, false);
+
+ for (i = 0; i < _graph_size; i++)
+ {
+    candidate q;
+    q.label = i;
+    q.claw = 0;
+    q.k = 0;
+    candidate v[1]; 
+    compressedFaSEGo(q, 0, 0, 0, v, 1);
+ }
+
+  
+  printf("LS-Classes: %lld\n", CustomGTrie::getClassNumber());
+  CustomGTrie::listCustomGTrie(stdout);
+  CustomGTrie::listClasses(stdout, 1);
+
 
   count = 0;
   delete[] current;

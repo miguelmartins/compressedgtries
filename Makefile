@@ -23,6 +23,8 @@ SRC =               \
 	Isomorphism.cpp	\
 	Error.cpp	\
 	GTrie.cpp	\
+	CustomGTrie.cpp \
+	LSLabeling.cpp \
 	Timer.cpp	\
 	Random.cpp	\
 	GraphTree.cpp	\

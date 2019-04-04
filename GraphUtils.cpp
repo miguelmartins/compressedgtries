@@ -35,6 +35,7 @@ void GraphUtils::readFileTxt(Graph *g, const char *s, bool dir, bool weight) {
   size = max = 0;
   while (fscanf(f,"%d %d", &a, &b)==2) {
     if (weight) i=fscanf(f,"%d", &c);
+
     va.push_back(a);
     vb.push_back(b);
     if (a>max) max=a;

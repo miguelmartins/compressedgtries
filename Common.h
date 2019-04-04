@@ -45,6 +45,9 @@ Last Update: 11/02/2012
 #define MIN_MOTIF_SIZE  3
 #define MAX_MOTIF_SIZE 50
 
+#define MAXS 200
+#define MAXMOTIF 20
+
 #define ERROR_HEADER "Error: "
 
 #define INVALID -1

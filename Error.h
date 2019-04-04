@@ -21,6 +21,7 @@ Last Update: 11/02/2012
 #define _ERROR_
 
 #include "Graph.h"
+#include "LSLabeling.h"
 
 #define EXIT_FAILURE 1
 
