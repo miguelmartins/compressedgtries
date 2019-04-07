@@ -48,6 +48,8 @@ class CustomGTrie
 
   static void compressedInsert(char *s, long long int occur);
   static void deepenClaw(char *s, long long int);
+  static int  compressedSearchLabel(labelTrie *node, char *s, long long int occur);
+  static void compressedSetCanonicalLabel(char *s, long long int occur);
  
   static void setCanonicalLabel(char *s);
   static void jump();

@@ -34,7 +34,7 @@ GraphTree *Esu::_sg;
 CompressedGraph *Esu::c = NULL;
 CompressedGraph *Esu::x = NULL;
 
-int     Esu::count = 0;
+long long int    Esu::count = 0;
 candidate *Esu::ext = NULL;
 candidate *Esu::current = NULL;
 
@@ -307,17 +307,12 @@ void Esu::compressedFaSEGo(candidate n, int size, int actual_size, int next, can
   {
     _current[actual_size] = n.label;
     total_occurences *= 1;
+    /*Só inserimos para subgrafos de k >=2 .*/
     if(actual_size > 0)
     {
       char* addLabel = LSLabel(_current[actual_size], actual_size); 
       CustomGTrie::compressedInsert(addLabel, total_occurences);
-      //printf("Inserted\n");
     }
-    else
-    {
-      //printf("yikes!\n");
-    }
-
     actual_size += 1;
   }
   else
@@ -325,43 +320,28 @@ void Esu::compressedFaSEGo(candidate n, int size, int actual_size, int next, can
     int start = actual_size;
     actual_size += current[size].k;
     total_occurences *= nChoosek(current[size].claw, current[size].k);
-    for(int j = 0; j < current[size].k - 1 ; j++)
+    for(int j = 0; j < current[size].k; j++)
     {
        _current[start + j] = claw_start_index[current[size].label] + j;
-       //printf("Deepen %d\n", _current[start + j]);
-       char* addLabel = LSLabel(_current[start + j], start + j); 
-       CustomGTrie::deepenClaw(addLabel, total_occurences); 
-       /*Se calhar por aqui?*/
     }
 
-    _current[start + current[size].k - 1] = claw_start_index[current[size].label] + current[size].k - 1;
-
-
-    //printf("Inserted claw %d\n", _current[start + current[size].k - 1]);
     char* addLabel = LSLabel(_current[actual_size - 1], actual_size - 1);
     CustomGTrie::compressedInsert(addLabel, total_occurences);
   }
 
-  //std::cout << "Current Solution: ";
-  /*
-  for(int l = 0; l < actual_size; l++)
-  {
-    std::cout << _current[l] << " ";
-  }
-
-  std::cout << endl;*/
   size++;
 
 
   if (actual_size == _motif_size) {
     /*Constrói occcurencia*/
+    count += total_occurences;
     if(!CustomGTrie::getCurrentLeaf())
     {
-        char s[_motif_size*_motif_size+1];
-        Isomorphism::compressedCanonicalStrNauty(x, _current, s);
-        CustomGTrie::setCanonicalLabel(s);
+      char s[_motif_size*_motif_size+1];
+      s[0] = '\0';
+      Isomorphism::compressedCanonicalStrNauty(x, _current, s);
+      CustomGTrie::compressedSetCanonicalLabel(s, total_occurences);
     }
-    /*count += total_occurences;*/
 
   } else {
     int i,j;
@@ -408,7 +388,7 @@ void Esu::compressedFaSEGo(candidate n, int size, int actual_size, int next, can
          int remain_size;
 
          remain_size = _motif_size - actual_size;
-         /*Podemos gerar as combinacoes ate no maximo o tamanho da claw*/
+         /*O tamanho restante do motif é o majorante para o número de combinações possíveis.*/
          int bound = min(remain_size, c->numClaws(current[size - 1].label));
 
 
@@ -418,10 +398,11 @@ void Esu::compressedFaSEGo(candidate n, int size, int actual_size, int next, can
            ext2[next2].claw = c->numClaws(current[size - 1].label);
            ext2[next2].k = comb;
            compressedFaSEGo(ext2[next2], size, actual_size, next2, ext2, total_occurences);
-           for(int jmp = 0; jmp < comb; jmp++)
-            CustomGTrie::jump();
-           
+           /* Coloca o ponteiro da GTrie no vértice periférico. */
          }
+
+         for(int jmp = 0; jmp < bound; jmp++)
+            CustomGTrie::jump();
          
       }
 
@@ -439,10 +420,12 @@ void Esu::compressedFaSEGo(candidate n, int size, int actual_size, int next, can
        while (next2 > 0) {      
         next2--;
         compressedFaSEGo(ext2[next2], size, actual_size, next2, ext2, total_occurences);
+        /* Os jumps das claws são tratados quando são gerados, já os vértices normais não. */
         if(ext2[next2].k == 0) 
         {
           CustomGTrie::jump();
-        } 
+        }
+        /*else for(int jmp = 0; jmp < ext2[next2].k; jmp++)*/
       }
     }
   }
@@ -513,7 +496,7 @@ void Esu::compressedFaSE(CompressedGraph *g, int k) {
   printf("LS-Classes: %lld\n", CustomGTrie::getClassNumber());
   CustomGTrie::listCustomGTrie(stdout);
   CustomGTrie::listClasses(stdout, 1);
-
+  printf("Total occurences: %lld\n",count);
 
   count = 0;
   delete[] current;

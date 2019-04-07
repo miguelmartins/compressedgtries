@@ -67,12 +67,13 @@ int main(int argc, char* argv[])
 	
 
 	Esu::compressedFaSE(C, motif_size);
-
-	Esu::compressedCountSubgraphs(C, motif_size, &sg2);
 	Timer::stop(0);
+	printf("Time: %.2f\n", Timer::elapsed(0));
+	Esu::compressedCountSubgraphs(C, motif_size, &sg2);
+	
 
 	std::cout << endl << "*****COMPRESSED*****" << endl;
-	printf("Time: %.2f\n", Timer::elapsed(0));
+	
 	printf("%d subgraphs, ",   sg2.countGraphs());
   	printf("%.0f occurrences\n", sg2.countOccurrences());
 

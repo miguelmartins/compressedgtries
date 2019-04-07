@@ -142,29 +142,6 @@ void CustomGTrie::insert(char* s)
   }
 
 }
-/* hold this thought, adicionar ocurencia so no fim
-void CustomGtrie::clawInsert(char *s, long long int occur)
-{
-  childTrie* temp = searchChild(current->childs, s);
-  if (temp->ref != NULL)
-  {
-    std::cout << temp->ref->count << " added " << occur << endl;
-    temp->ref->count = temp->ref->count + occur;
-    canCount[temp->ref->leaf]++;
-    current = temp->ref;
-  }
-  else
-  {
-
-    nodes++;
-    temp->ref = new CustomGTrie::trie();
-    temp->ref->parent = current;
-    temp->ref->childs = initChild();
-    temp->ref->count = occur;
-    temp->ref->leaf = 0;
-    current = temp->ref;
-  }
-} */
 
 void CustomGTrie::deepenClaw(char *s, long long int occur)
 {
@@ -173,10 +150,10 @@ void CustomGTrie::deepenClaw(char *s, long long int occur)
   if (temp->ref != NULL)
   {
     /*Não sei se claws intermédias são leaves*/
-   canCount[temp->ref->leaf]++;
+   //canCount[temp->ref->leaf] = occur;
+  
    current = temp->ref;
-
-
+   canCount[temp->ref->leaf] += occur;
    /*Acho que nao devemos incrementar as claws intermedias*/
    //temp->ref->count = temp->ref->count + occur;
   }
@@ -184,28 +161,60 @@ void CustomGTrie::deepenClaw(char *s, long long int occur)
 }
 
 void CustomGTrie::compressedInsert(char *s, long long int occur)
-{
-    
-    
+{   
   //if(current == NULL) printf("oh dear\n");
   childTrie* temp = searchChild(current->childs, s);
  
   if (temp->ref != NULL)
   {
     temp->ref->count = temp->ref->count + occur;
-    canCount[temp->ref->leaf]++;
+    canCount[temp->ref->leaf] += occur;
     current = temp->ref;
   }
   else
   {
-
     nodes++;
     temp->ref = new CustomGTrie::trie();
     temp->ref->parent = current;
     temp->ref->childs = initChild();
     temp->ref->count = occur;
+    
     temp->ref->leaf = 0;
     current = temp->ref;
+  }
+}
+
+
+int CustomGTrie::compressedSearchLabel(labelTrie *node, char *s, long long int occur)
+{
+  if (*s == 0)
+  {
+
+    if (node->num == 0)
+    {
+      node->num = numLabel;
+      canCount[numLabel] = occur;
+      labelList[numLabel++] = node;
+      if (numLabel == maxLabel - 2)
+        augment();
+    }
+    else
+    {
+      canCount[node->num] += occur;
+    }
+
+    return node->num;
+  }
+  else
+  {
+    if (node->childs[*s - '0'] == NULL)
+    {
+      node->childs[*s - '0'] = new labelTrie();
+      node->childs[*s - '0']->num = 0;
+      node->childs[*s - '0']->let = *s;
+      node->childs[*s - '0']->parent = node;
+    }
+    return compressedSearchLabel(node->childs[*s - '0'], s + 1, occur);
   }
 }
 
@@ -243,6 +252,15 @@ void CustomGTrie::setCanonicalLabel(char* s)
 {
   CustomGTrie::count++;
   int vl = searchLabel(labelRoot, s);
+  current->leaf = vl;
+}
+
+void CustomGTrie::compressedSetCanonicalLabel(char *s, long long int occur)
+{
+  /*+= occur?*/
+  CustomGTrie::count++;
+
+  int vl = compressedSearchLabel(labelRoot, s, occur);
   current->leaf = vl;
 }
 

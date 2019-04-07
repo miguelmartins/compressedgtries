@@ -49,7 +49,7 @@ class Esu {
 
   static CompressedGraph *c;
   static CompressedGraph *x;
-  static int count;
+  static long long int count;
   static candidate *ext;
   static candidate *current;
   static int *claw_seq;
