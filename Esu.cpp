@@ -68,7 +68,7 @@ void Esu::_go(int n, int size, int next, int *ext) {
 
     /*Constrói occcurencia*/
     char s[_motif_size*_motif_size+1];
-    Isomorphism::canonicalStrNauty(_g, _current, s);
+    Isomorphism::compressedCanonicalStrNauty(x, _current, s);
 
     /* Incrementa. */
     _sg->incrementString(s);
@@ -141,12 +141,12 @@ void Esu::compressedGo(candidate n, int size, int actual_size, int next, candida
 
   if (actual_size == _motif_size) {
     /*Constrói occcurencia*/
-
+    count += total_occurences;
     char s[_motif_size*_motif_size+1];
-
-    Isomorphism::compressedCanonicalStrNauty(x, _current, s);
+    s[0] = '\0';
+    Isomorphism::canonicalStrNauty(x, _current, s);
+ 
     _sg->addString(s, total_occurences);
-    /*count += total_occurences;*/
 
   } else {
     int i,j;
@@ -284,6 +284,8 @@ void Esu::compressedCountSubgraphs(CompressedGraph *g, int k, GraphTree *sg) {
     compressedGo(q, 0, 0, 0, v, 1);
  }
 
+
+  printf("Count: %lld\n", count);
   count = 0;
   delete[] current;
   delete[] ext;
@@ -425,6 +427,7 @@ void Esu::compressedFaSEGo(candidate n, int size, int actual_size, int next, can
         {
           CustomGTrie::jump();
         }
+
         /*else for(int jmp = 0; jmp < ext2[next2].k; jmp++)*/
       }
     }
@@ -493,11 +496,11 @@ void Esu::compressedFaSE(CompressedGraph *g, int k) {
  }
 
   
-  printf("LS-Classes: %lld\n", CustomGTrie::getClassNumber());
-  CustomGTrie::listCustomGTrie(stdout);
-  CustomGTrie::listClasses(stdout, 1);
+  //printf("LS-Classes: %lld\n", CustomGTrie::getClassNumber());
+  //CustomGTrie::listCustomGTrie(stdout);
+  //CustomGTrie::listClasses(stdout, 1);
   printf("Total occurences: %lld\n",count);
-
+  printf("%d subgraphs, %lld total occurences\n", CustomGTrie::getCanonicalNumber(), count);
   count = 0;
   delete[] current;
   delete[] ext;

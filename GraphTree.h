@@ -28,7 +28,7 @@ class GraphTreeNode   {
   GraphTreeNode();
   ~GraphTreeNode();
 
-  int frequency;
+  long long int frequency;
   GraphTreeNode *zero, *one;
 
   void zeroFrequency();

@@ -104,9 +104,9 @@ void Fase::EnumerateSubgraphs(Graph *_G, int _K)
 	         ext[extNum++] = nei[j];
       ExtendSubgraph(ext, extNum, 1, i);
     }
-  printf("LS-Classes: %lld\n", GTrie::getClassNumber());
-  GTrie::listGtrie(stdout);
-  GTrie::listClasses(stdout, 1);
+  //printf("LS-Classes: %lld\n", GTrie::getClassNumber());
+  //GTrie::listGtrie(stdout);
+  //GTrie::listClasses(stdout, 1);
   //  printf("\t\tWith G-Tries:\n");
   //   printf("Found %d Motifs\n", MotifCount);
   //  printf("LS-Classes: %lld\n", GTrie::getClassNumber());
